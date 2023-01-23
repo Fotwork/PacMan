@@ -92,6 +92,11 @@ def depthFirstSearch(problem):
     # w = Directions.WEST
 
     from util import Stack
+    from game import Directions
+    s = Directions.SOUTH
+    w = Directions.WEST
+    e = Directions.EAST
+    n = Directions.NORTH
     myStack = Stack()
     myStack.push(problem.getStartState())
 
@@ -99,15 +104,17 @@ def depthFirstSearch(problem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
 
-    myPath = []
+    myPath = {}
+    
+    commands = []
     tempPath = []
     done_elements = []
 
     myElements = []
     h = 0
-    myElements.append((current_state, h))
+    #myElements.append((current_state, h))
+    startPoint = problem.getStartState()
     current_state = problem.getStartState()
-    
     while not problem.isGoalState(current_state):
         current_state = myStack.pop()
         done_elements.append(current_state)
@@ -115,22 +122,34 @@ def depthFirstSearch(problem):
         for pos in problem.getSuccessors(current_state):
             if pos[0] not in done_elements:
                 myStack.push(pos[0])
-                myElements
-        
 
-        tempPath.append(problem.getSuccessors(current_state)[1])
-
-        print("[")
-        for elem in myStack.list:
-            print(elem,",")
-        print("]")
-        
-        print("Actual state a BEHLOOL :", current_state)
-        import time
-        time.sleep(1)
+                myPath[pos[0]] = (current_state, pos[1])
 
     
-    return myPath
+    myPath['Goal'] = (current_state, 'NaN')
+    import time
+
+    print('++++++++++++++++++++++\n')
+    current = ('Goal', 'Nan')
+    
+    while current[0] != startPoint:
+        current = myPath[current[0]]
+        print(current[1])
+        if current[1] == 'South':
+            commands.append(s)
+
+        if current[1] == 'North':
+            commands.append(n)
+
+        if current[1] == 'West':
+            commands.append(w)
+
+        if current[1] == 'East':
+            commands.append(e)
+
+    commands.reverse()
+    print(commands)
+    return commands
     #util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
