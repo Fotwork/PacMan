@@ -52,11 +52,11 @@ class SearchProblem:
         """
         util.raiseNotDefined()
 
-    def getCostOfActions(self, actions):
+    def getCostOfpaths(self, paths):
         """
-         actions: A list of actions to take
+         paths: A list of paths to take
 
-        This method returns the total cost of a particular sequence of actions.
+        This method returns the total cost of a particular sequence of paths.
         The sequence must be composed of legal moves.
         """
         util.raiseNotDefined()
@@ -76,7 +76,7 @@ def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
 
-    Your search algorithm needs to return a list of actions that reaches the
+    Your search algorithm needs to return a list of paths that reaches the
     goal. Make sure to implement a graph search algorithm.
 
     To get started, you might want to try some of these simple commands to
@@ -87,81 +87,92 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    # from game import Directions
-    # s = Directions.SOUTH
-    # w = Directions.WEST
+    mystack = util.Stack()
+    visited_nodes = []
+    path = [] 
 
-    from util import Stack
-    from game import Directions
-    s = Directions.SOUTH
-    w = Directions.WEST
-    e = Directions.EAST
-    n = Directions.NORTH
-    myStack = Stack()
-    myStack.push(problem.getStartState())
+    if problem.isGoalState(problem.getStartState()):
+        return []
 
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
+    mystack.push((problem.getStartState(),[]))
 
-    myPath = {}
-    
-    commands = []
-    tempPath = []
-    done_elements = []
+    while True:
+        if mystack.isEmpty():
+            return []
+        node_position, path = mystack.pop()
+        visited_nodes.append(node_position)
 
-    myElements = []
-    h = 0
-    #myElements.append((current_state, h))
-    startPoint = problem.getStartState()
-    current_state = problem.getStartState()
-    while not problem.isGoalState(current_state):
-        current_state = myStack.pop()
-        done_elements.append(current_state)
-        #fill stack with successors
-        for pos in problem.getSuccessors(current_state):
-            if pos[0] not in done_elements:
-                myStack.push(pos[0])
+        if problem.isGoalState(node_position):
+            return path
+        
+        successors = problem.getSuccessors(node_position)
+        if successors:
+            for successor in successors:
+                if successor[0] not in visited_nodes:
+                    new_path = path + [successor[1]] 
+                    mystack.push((successor[0],new_path))
 
-                myPath[pos[0]] = (current_state, pos[1])
-
-    
-    myPath['Goal'] = (current_state, 'NaN')
-    import time
-
-    print('++++++++++++++++++++++\n')
-    current = ('Goal', 'Nan')
-    
-    while current[0] != startPoint:
-        current = myPath[current[0]]
-        print(current[1])
-        if current[1] == 'South':
-            commands.append(s)
-
-        if current[1] == 'North':
-            commands.append(n)
-
-        if current[1] == 'West':
-            commands.append(w)
-
-        if current[1] == 'East':
-            commands.append(e)
-
-    commands.reverse()
-    print(commands)
-    return commands
-    #util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    myqueue = util.Queue()
+    visited_nodes = []
+    path = [] 
+
+    if problem.isGoalState(problem.getStartState()):
+        return []
+
+    myqueue.push((problem.getStartState(),[]))
+
+    while True:
+        if myqueue.isEmpty():
+            return []
+        node_position, path = myqueue.pop()
+        visited_nodes.append(node_position)
+
+        if problem.isGoalState(node_position):
+            return path
+        
+        successors = problem.getSuccessors(node_position)
+        if successors:
+            for successor in successors:
+                if successor[0] not in visited_nodes and successor[0] not in (state[0] for state in myqueue.list):
+
+                    new_path = path + [successor[1]] 
+                    myqueue.push((successor[0],new_path))
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import PriorityQueue
 
+    myqueue = PriorityQueue()
+    paths, visited_nodes = [], []
+
+    current_node = problem.getStartState()
+    myqueue.push((current_node, []), 0)
+
+    while not myqueue.isEmpty():
+
+        if myqueue.isEmpty():
+            return []
+        
+        current_node, paths = myqueue.pop()
+
+        if problem.isGoalState(current_node):
+            return paths
+
+        if current_node not in visited_nodes:
+            visited_nodes.append(current_node)
+
+            for node, direction, _ in  problem.getSuccessors(current_node):
+                new_path = paths + [direction]
+                priority  = problem.getCostOfActions(new_path)
+                myqueue.push((node, new_path), priority )
+       
+    return []
 def nullHeuristic(state, problem=None):
     """
     A heuristic function estimates the cost from the current state to the nearest
@@ -172,7 +183,30 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import PriorityQueue
+    myqueue = PriorityQueue()
+    paths, visited_nodes = [], []
+
+    current_node = problem.getStartState()
+    myqueue.push((current_node, []), 0)
+
+    while not myqueue.isEmpty():
+
+        if myqueue.isEmpty():
+            return []
+        
+        current_node, paths = myqueue.pop()
+
+        if problem.isGoalState(current_node):
+            return paths
+
+        if current_node not in visited_nodes:
+            visited_nodes.append(current_node)
+
+            for node, direction, _ in  problem.getSuccessors(current_node):
+                new_path = paths + [direction]
+                priority  = problem.getCostOfActions(new_path)  + heuristic(node, problem)
+                myqueue.push((node, new_path), priority )
 
 
 # Abbreviations
